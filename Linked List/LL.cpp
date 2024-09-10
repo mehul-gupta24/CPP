@@ -16,10 +16,10 @@ class Node{
             return;
         }
         Node*head=new Node(val);
-        head->next=createLL();
+        // head->next=createLL();
     }
 };
 int main(){
-    Node* head(5);
-    Node* head(5);
+    // Node* head(5);
+    // Node* head(5);
 }
