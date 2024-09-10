@@ -22,10 +22,10 @@ class Person{
     public:
     string name;
     int age;
-    Person(string name,int age){
-        this->age=age;
-        this->name=name;
-    }
+    // Person(string name,int age){
+    //     this->age=age;
+    //     this->name=name;
+    // }
 
 };
 //child/derived class ,Inherit
@@ -41,6 +41,7 @@ class Student : public Person{
         cout<<"Name : "<< this->name<<endl;
         cout<<"Age : "<< this->age<<endl;
         cout<<"Roll-no : "<< this->roll_no<<endl;
+        return;
     }
 };
 
