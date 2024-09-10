@@ -6,9 +6,29 @@ using namespace std;
         // Static Objects - 
 
 
+void fun(){
+    static int x=0;
+    cout<<"x : "<<x<<endl;
+    x++;
+}
+
 class Parent{ 
-
+public:
+     int x;
+    void set_x(){
+        x=x+1;
+    }
 };
-class Child{
-
-};
+int main(){
+    // fun();
+    // fun();
+    Parent p1;
+    p1.x=100;
+    p1.set_x();
+    Parent p2;
+    p2.x=200;
+    p2.set_x();
+    cout<<p1.x<<endl;
+    cout<<p2.x<<endl;
+    
+}

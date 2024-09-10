@@ -18,7 +18,6 @@ class Circle : public Shape{
     void draw(){
         cout<<"circle is drawn"<<endl;
     }
-
 };
 int main(){
     Circle c1;
