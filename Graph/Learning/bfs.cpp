@@ -45,8 +45,8 @@ class Graph{
         }
         return ans;
     }
+    
 };
-
 int main(){
     int vertex=3;
     Graph g;
