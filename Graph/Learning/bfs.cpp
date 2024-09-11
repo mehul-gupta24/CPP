@@ -24,9 +24,9 @@ class Graph{
         }
 
     }
-    vector<int> solve_for_bfs(vector<vector<int>>edges,int vertex,int edge,int source_node){
+    vector<int> solve_for_bfs(vector<vector<int > >edges,int vertex,int edge,int source_node){
         //1st we need to make adjacency list
-        unordered_map<int,list<int>>adj;
+        unordered_map<int,list<int > >adj;
         for(int i=0;i<edges.size();i++){
             int u=edges[i][0];
             int v=edges[i][1];
@@ -35,7 +35,7 @@ class Graph{
             adj[v].push_back(u);
         }
         vector<int>ans;
-        unordered_map<int,bool>visited(0,vertex);
+        unordered_map<int,bool>visited;
         //here vertex is the total number of vertices,and we r traversing through it considering graph is starting from 0 and endnig at node value vertex-1
         // for disconnected component
         for(int i=0;i<vertex;i++){
