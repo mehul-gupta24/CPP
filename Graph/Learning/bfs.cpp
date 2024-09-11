@@ -45,12 +45,41 @@ class Graph{
         }
         return ans;
     }
-    
+    void dfs(vector<int>&ans,unordered_map<int,list<int>>&adj,unordered_map<int,bool>&visited,int node){
+        ans.push_back(node);
+        visited[node]=true;
+        for(auto neighbour:adj[node]){
+            if(!visited[neighbour]){
+                dfs(ans,adj,visited,neighbour);
+            }
+        }
+    }
+    vector<int> solve_for_dfs(vector<vector<int>>edges,int vertex,int edge,int source_node){
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        unordered_map<int,bool>visited;
+        vector<int>ans;
+        for(int i=0;i<vertex;i++){
+            if(!visited[i]){
+                dfs(ans,adj,visited,i);
+            }
+        }
+        return ans;
+    }
+
 };
 int main(){
     int vertex=3;
     Graph g;
-    vector<int>ans=g.solve_for_bfs({{1,3},{2,3},{1,2}},3,3,1);
+    // vector<int>ans=g.solve_for_bfs({{1,2},{2,3},{3,4},{4,1}},4,4,1);
+    // vector<int>ans2=g.solve_for_bfs({{1,2},{2,3},{3,4},{4,1},{2,4}},4,5,1);
+    vector<int>ans=g.solve_for_dfs({{0, 2}, {0, 3}, {0, 1}, {2, 4}},5,4,0);
+
     for(int i=0;i<ans.size();i++){
         cout<<ans[i]<<" ";
     }
