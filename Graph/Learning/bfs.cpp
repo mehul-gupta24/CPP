@@ -71,17 +71,62 @@ class Graph{
         }
         return ans;
     }
+    bool cycle_bfs(unordered_map<int,list<int>>&adj,unordered_map<int,bool>&visited,unordered_map<int,int>&parent,int node){
+        queue<int>q;
+        visited[node]=true;
+        parent[node]=-1;
+        q.push(node);
+        while(!q.empty()){
+            int front=q.front();
+            q.pop();
+            for(auto it:adj[front]){
+                if(parent[it]!=front && visited[it]){
+                    return true;
+                }
+                else if(!visited[it]){
+                    q.push(it);
+                    visited[it]=true;
+                    parent[it]=front;
+                }
+            }
+        }
+        return false;
+    }
+    bool cycleDetectionByBFS(vector<vector<int>>edges,int vertex,int edge,int source_node){
+        // for undirected graph
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        unordered_map<int,bool>visited;
+        unordered_map<int,int>parent;
+        for(int i=0;i<vertex;i++){
+            if(!visited[i]){
+                bool ans=cycle_bfs(adj,visited,parent,i);
+                if(ans) {
+                    cout<<"cycle is present";
+                    return 1;
+                }
+            }
+        }
+        cout<<"cycle is not present";
+        return false;
+    }
 
 };
 int main(){
-    int vertex=3;
+    // int vertex=3;
     Graph g;
     // vector<int>ans=g.solve_for_bfs({{1,2},{2,3},{3,4},{4,1}},4,4,1);
     // vector<int>ans2=g.solve_for_bfs({{1,2},{2,3},{3,4},{4,1},{2,4}},4,5,1);
-    vector<int>ans=g.solve_for_dfs({{0, 2}, {0, 3}, {0, 1}, {2, 4}},5,4,0);
-
-    for(int i=0;i<ans.size();i++){
-        cout<<ans[i]<<" ";
-    }
+    // vector<int>ans=g.solve_for_dfs({{0, 2}, {0, 3}, {0, 1}, {2, 4}},5,4,0);
+    g.cycleDetectionByBFS({{0, 1}, {1, 2}, {2, 4}, {0, 3}},5,4,0);
+    
+    // for(int i=0;i<ans.size();i++){
+    //     cout<<ans[i]<<" ";
+    // }
     cout<<endl;
 }
