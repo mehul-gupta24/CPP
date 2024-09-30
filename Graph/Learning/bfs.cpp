@@ -2,8 +2,9 @@
 #include<iostream>
 #include<vector>
 #include<map>
+#include<stack>
 #include<queue>
-// #include <utility>
+#include <utility>
 #include<list>
 using namespace std;
 class Graph{
@@ -156,12 +157,12 @@ class Graph{
         cout<<"cycle is not present";
         return false;
     }
-    bool check_cycle_directed(unordered_map<int,list<int>>&adj,unordered_map<int,bool>&visited,unordered_map<int,bool>&dfs_visited,int node){
+    bool cycleDetectionByDFS_directed_fun(unordered_map<int,list<int>>&adj,unordered_map<int,bool>&visited,unordered_map<int,bool>&dfs_visited,int node){
         visited[node]=true;
         dfs_visited[node]=true;
         for(auto neighbour:adj[node]){
             if(!visited[neighbour]){
-                bool ans=check_cycle_directed(adj,visited,dfs_visited,neighbour);
+                bool ans=cycleDetectionByDFS_directed_fun(adj,visited,dfs_visited,neighbour);
                 if(ans)
                     return true;
             }
@@ -183,12 +184,176 @@ class Graph{
         unordered_map<int,bool>dfs_visited;
         for(int i=0;i<vertices;i++){
             if(!visited[i]){
-                return check_cycle_directed(adj,visited,dfs_visited,i);
+                return cycleDetectionByDFS_directed_fun(adj,visited,dfs_visited,i);
             }
         }
         return false;
     }
+    void topological_sort_dfs_fun(unordered_map<int,list<int>>adj,unordered_map<int,bool>&visited,stack<int>&st,int node){
+        //only for directed acyclic graph(DAG)
+        visited[node]=true;
+        for(auto neighbour:adj[node]){
+            if(!visited[neighbour]){
+                topological_sort_dfs_fun(adj,visited,st,neighbour);
+            }
+        }
+        st.push(node);
+    }
+    void topological_sort_dfs(vector<vector<int>>edges,int source,int vertices,int e){
+        // topological sort - it is the linear order of vertices such that for every edge u-v , u always appear before v in that order
+        //only on directed acyclic graph
+        // acyclic - because if cycle present than infinite loop
+        // directed as - we have to know by which edge which is connected , so that we can come to an ordering
+        // If we arent able to find valid topological sort , then that directed graph contains cycle // very important
+        // We need extra data structure that is stack for getting ordering , as we will be pushing neighbour and then after poping it we will store it in another array
+        // for DAG
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+        }
+        unordered_map<int,bool>visited;
+        stack<int>st;
+        for(int i=0;i<vertices;i++){
+            if(!visited[i]){
+                topological_sort_dfs_fun(adj,visited,st,i);
+            }
+        }
+        //we got updated stack
+        while(!st.empty()){
+            cout<<st.top()<<" ";
+            st.pop();
+        }
 
+    }
+    void topological_sort_bfs(vector<vector<int>>edges,int source ,int nodes,int e){
+        //Kahn's Algorithm
+        //for DAG
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+        }
+        vector<int>indegree(nodes+1);
+        // 0 based vertices ,so no issue , otherwise indegree(nodes+1)
+        for(auto i:adj){
+            for(auto j:i.second){
+                indegree[j]++;
+            }
+        }
+        queue<int>q;
+        for(int i=0;i<nodes;i++){
+            if(indegree[i]==0){
+                q.push(i);
+            }
+        }
+        //bfs
+        vector<int>ans;
+        while(!q.empty()){
+            int front=q.front();
+            q.pop();
+            ans.push_back(front);
+            for(auto neighbour:adj[front]){
+                indegree[neighbour]--;
+                if(indegree[neighbour]==0){
+                    q.push(neighbour);
+                }
+            }
+        }
+        for(auto i:ans){
+            cout<<i<<" ";
+        }
+    }
+    bool cycleDetectionByBFS_directed(vector<vector<int>>edges,int source,int nodes,int e){
+        //invalid toppological sort - means cyclic graph
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+        }
+        // adj list is made
+        // now about indegree
+        vector<int>indegree(nodes);
+        for(auto i:adj){
+            for(auto j:i.second){
+                indegree[j]++;
+            }
+        }
+        queue<int>q;
+        for(int i=0;i<nodes;i++){
+            if(indegree[i]==0){
+                q.push(i);
+            }
+        }
+        int count=0;
+        while(!q.empty()){
+            int front=q.front();
+            q.pop();
+            count++;
+            for(auto neighbour:adj[front]){
+                indegree[neighbour]--;
+                if(indegree[neighbour]==0){
+                    q.push(neighbour);
+                }
+            }
+        }
+        // means normal acyclic graph is there,cycle not present
+        if(count==0){
+            cout<<"cycle is present";
+            return true;
+        }
+        cout<<"cycle is not present";
+        return false;
+    }
+
+    int shortest_path_in_UnDirectedGraph(vector<pair<int,int>>edges,int source,int dest,int nodes,int e){
+        //undirected acyclic graph
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i].first;
+            int v=edges[i].second;
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        unordered_map<int,bool>visited;
+        unordered_map<int,int>parent;
+        queue<int>q;
+        q.push(source);
+        visited[source]=1;
+        parent[source]=-1;
+        while(!q.empty()){
+            int front=q.front();
+            q.pop();
+            for(auto neighbour:adj[front]){
+                if(!visited[neighbour]){
+                    visited[neighbour]=1;
+                    parent[neighbour]=front;
+                    q.push(neighbour);
+                }
+            }
+        }
+        //we have the parent vector now
+        vector<int>ans;
+        int count=0;
+        ans.push_back(dest);
+        while(dest!=source){
+            dest=parent[dest];
+            ans.push_back(dest);
+            count++;
+        }
+        // we also have shortest path in count
+        //we got dest , now need to reverse it
+        reverse(ans.begin(),ans.end());
+    }
+
+    int shortest_path_in_DirectedGraph(){
+        // directed acyclic graph
+        
+
+    }
 };
 int main(){
     // int vertex=3;
@@ -206,10 +371,21 @@ int main(){
     // }
     // cout<<"cycle is not present";
 
-    
+
 
     // for(int i=0;i<ans.size();i++){
     //     cout<<ans[i]<<" ";
     // }
-    cout<<endl;
+
+    // g.topological_sort_dfs({{0, 1}, {1, 2}, {2, 0}}, 0, 3, 3);
+    // g.topological_sort_dfs({{2,3}, {3,1}, {4,0}, {4,1}, {5,0}, {5,2}}, 0, 6, 6);
+    // cout<<endl;
+    // g.topological_sort_bfs({{2,3}, {3,1}, {4,0}, {4,1}, {5,0}, {5,2}}, 0, 6, 6);
+    // g.topological_sort_dfs({{0,1}, {0,2} ,{1,3}, {2,3}, {3,4}}, 0, 5, 5);
+    // cout<<endl;
+    // g.topological_sort_bfs({{0,1}, {0,2} ,{1,3}, {2,3}, {3,4}}, 0, 5, 5);
+    
+    // cout<<g.cycleDetectionByBFS_directed({{0,1}, {1,2} ,{2,3}}, 0, 4, 3);
+
+    
 }
