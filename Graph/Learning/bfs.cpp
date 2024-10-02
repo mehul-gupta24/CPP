@@ -6,6 +6,8 @@
 #include<queue>
 #include <utility>
 #include<list>
+#include<limits>
+#include<set>
 using namespace std;
 class Graph{
     public:
@@ -347,13 +349,117 @@ class Graph{
         // we also have shortest path in count
         //we got dest , now need to reverse it
         reverse(ans.begin(),ans.end());
+        return 0;
     }
 
-    int shortest_path_in_DirectedGraph(){
+    // unordered_map<int,pair<int,int>>> adj;
+    unordered_map<int, list<pair<int, int>>> adj;
+    void addEdge(int u,int v,int weight){
+        pair<int,int>p={v,weight};
+        adj[u].push_back(p);
+    }
+    void printAdj(){
+        for(auto it:adj){
+            cout<<it.first<< " - ";
+            for(auto i:it.second){
+                cout<<"{ "<<i.first<<" , "<<i.second<<" } ";
+            }
+            cout<<endl;
+        }
+    }
+    void topological_sort_dfs_fun_forShortestPathInDAG(unordered_map<int, list<pair<int, int>>>&adj,unordered_map<int,bool>&visited,stack<int>&st,int node){
+        //only for directed acyclic graph(DAG)
+        visited[node]=true;
+        for(auto neighbour:adj[node]){
+            if(!visited[neighbour.first]){
+                topological_sort_dfs_fun_forShortestPathInDAG(adj,visited,st,neighbour.first);
+            }
+        }
+        st.push(node);
+    }
+    void shortest_path_in_DirectedGraph(vector<vector<int>>edges,int n){
         // directed acyclic graph
-        
-
+        // as weights are there we will have adj list as unordered_map<int,list<pair<int,int>>>adj;
+        // input 2d vector gives edges rows and 3 columns where 3rd column is weight value
+        // unordered_map<int,list<pair<int,int>>>adj;
+        unordered_map<int, list<pair<int, int>>> adj;
+        for(int i=0;i<edges.size();i++){
+            // pair<int,int>p={edges[i][1],edges[i][2]};
+            adj[edges[i][0]].push_back({edges[i][1],edges[i][2]});
+        }
+        // printAdj(adj);
+        stack<int>st;
+        unordered_map<int,bool>visited;
+        for(int i=0;i<n;i++){
+            if(!visited[i]){
+                topological_sort_dfs_fun_forShortestPathInDAG(adj,visited,st,i);
+            }
+        }
+        //now i have st stack with ordering of topological sort , now we need to pop that
+        int source=1;//source node
+        vector<int>distance(n);
+        for(int i=0;i<n;i++){
+            distance[i]=INT_MAX;
+        }
+        distance[source]=0;
+        while(!st.empty()){
+            int top=st.top();
+            st.pop();
+            if(distance[top]!=INT_MAX){
+                for(auto i:adj[top]){
+                    if(distance[top]+i.second<distance[i.first]){
+                        distance[i.first]=distance[top]+i.second;
+                    }
+                }
+            }
+        }
+        //now we have distance array updated;
+        for(int i=0;i<distance.size();i++){
+            cout<<i<<" "<<distance[i]<<endl;
+        }
     }
+
+    void dijkstra(vector<vector<int>>edges,int nodes){
+        unordered_map<int,list<pair<int,int>>>adj;
+        //weights are there , and unweighted graph
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back({v,edges[i][2]});
+            adj[v].push_back({u,edges[i][2]});
+        }
+        //done with adj list
+        //now distance array
+        vector<int>dist(nodes,INT_MAX);
+        int source=0;
+        dist[source]=0;
+        set<pair<int,int>>st;
+        //set={distance,node},{},{}
+        st.insert({dist[source],source});
+        while(!st.empty()){
+            auto get=st.begin();
+            int length=get->first;
+            int node=get->second;
+            st.erase(st.begin());
+            for(auto neighbour:adj[node]){
+                int weight=neighbour.second;
+                int v=neighbour.first;
+                if(weight+length<dist[v]){
+                    if(st.find({dist[v],v})!=st.end()){
+                        st.erase({dist[v],v});
+                    }
+                    dist[v]=weight+length;
+                    st.insert({dist[v],v});
+                }
+            }
+        }
+        //now we have updated dist array
+        for(int i=0;i<dist.size();i++){
+            cout<<i<<" "<<dist[i]<<endl;
+        }
+    }
+
+
 };
 int main(){
     // int vertex=3;
@@ -387,5 +493,19 @@ int main(){
     
     // cout<<g.cycleDetectionByBFS_directed({{0,1}, {1,2} ,{2,3}}, 0, 4, 3);
 
-    
+    // g.addEdge(1, 3, 6);
+    // g.addEdge(1, 2, 2);
+    // g.addEdge(0, 1, 5);
+    // g.addEdge(0, 2, 3);
+    // g.addEdge(3, 4, -1);
+    // g.addEdge(2, 4, 4);
+    // g.addEdge(2, 5, 2);
+    // g.addEdge(2, 3, 7);
+    // g.addEdge(4, 5, -2);
+    // g.printAdj();
+    // g.shortest_path_in_DirectedGraph({{1,3,6},{1,2,2},{0,1,5},{0,2,3},{3,4,-1},{2,4,4},{2,5,2},{2,3,7},{4,5,-2}},6);
+    // this gives shortes path from source node to every node
+    // g.dijkstra({{0,1,5},{0,2,8},{1,2,9},{1,3,2},{3,6,2}},4);
+    //right
+
 }
