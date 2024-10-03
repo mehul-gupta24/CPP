@@ -458,8 +458,9 @@ class Graph{
             cout<<i<<" "<<dist[i]<<endl;
         }
     }
-
-
+    // prims algorithm is used to find the minimum spanning tree 
+    // now what is MST(minimum spanning tree)
+    
 };
 int main(){
     // int vertex=3;
