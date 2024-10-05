@@ -504,8 +504,229 @@ class Graph{
         }
         return ans;
     }
-    
+    // Disjoint Set - 2 major elements - 1)findparent() or findset()
+                                    //   2)Union() or Union_set()
+                                    // Union by raank and path compression
+    void UnionSet(int u,int v,vector<int>&parent,vector<int>&rank){
+        int x=findParent(parent,u);
+        int y=findParent(parent,v);
+        //parents have
+        if(rank[x]<rank[y]){
+            parent[x]=y;
+        }
+        else if(rank[v]<rank[x]){
+            parent[y]=x;
+        }
+        else{
+            // in same case we can make anyone parent to any node,either u or v,doesnt matter,just we have to update the rank
+            parent[x]=y;
+            rank[y]++;
+        }
+        // if 2 nodes are given , and we need to find that whether they belong to same component or not , then we can find their parent and compare if their parent are same then they belong to same component otherwise not.
 
+    }
+    int findParent(vector<int>&parent,int node){
+        if(parent[node]==node){
+            return node;
+        }
+        return parent[node]=findParent(parent,parent[node]);
+        // this is path compression where the parent of node is directly attached to the root node(parent of all)
+    }
+    void makeSet(vector<int>&parent,vector<int>&rank,int n){
+        for(int i=0;i<=n;i++){
+            parent[i]=i;
+            rank[i]=0;
+        }
+    }
+    bool cmp(vector<int>&a,vector<int>&b){
+        // weights r in 2nd index column
+        return a[2]<b[2];
+    }
+    int minimumSpanningTree_Krushkal(vector<vector<int>>&edges,int n){
+        vector<int>parent(n);
+        vector<int>rank(n);
+        makeSet(parent,rank,n);
+        // we dont need adjacency list ,we need a linear data structure - where we need to store (weight,u,v) - u and v are nodes , and by weight we are sorting it - means minimum weight number will be at the top
+        int minWeight=0;
+        sort(edges.begin(),edges.end(),cmp);
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            int w=edges[i][2];
+            if(findParent(parent,u)!=findParent(parent,v)){
+                //means in different components , now we need to merge it
+                minWeight+=w;
+                UnionSet(u,v,parent,rank);
+            }
+        }
+        //parent vector is updated
+        return minWeight;
+    }
+    //Find bridge in a graph - 2 data structure - 2 array - 1)discovery time
+                                                        //  2)lowest discovery time
+    //Tarjan's Algorithm
+    void dfs_getBridge(unordered_map<int,list<int>>&adj,int node,vector<bool>visited,vector<int>dis,vector<int>low_dis,int time,int parent){
+        //tarjan algo
+        visited[node]=true;
+        dis[node]=time++;
+        low_dis[node]=time++;
+        for(auto neighbour:adj[node]){
+            if(neighbour==parent){
+                continue;
+            }
+            else if(!visited[neighbour]){
+                dfs_getBridge(adj,neighbour,visited,dis,low_dis,time,node);
+                low_dis[node]=min(low_dis[node],low_dis[neighbour]);
+                if(dis[node]<low_dis[neighbour]){
+                    //bridge is present
+                    cout<<"bridge is present between node "<<node <<" and node "<<neighbour<<endl;
+                    return;
+                }
+            }
+            //else visited[neighbour] and neighbour!=parent
+            else{
+                //means backedge is there , so for sure no bridge ,so just need to update the lowest distance value;
+                low_dis[node]=min(low_dis[node],dis[neighbour]); // why dis[neighbour] - that we will know in articulation point
+
+            }
+        }
+    }
+    void getBridge(vector<pair<int,int>>&edges,int nodes){
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i].first;
+            int v=edges[i].second;
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        vector<int>dis(nodes); //discovery time array
+        vector<int>low_dis(nodes); //lowest disc time array
+        vector<bool>visited(nodes,false); //lowest disc time array
+        int time=0;
+        for(int i=0;i<nodes;i++){
+            if(!visited[i]){
+                dfs_getBridge(adj,i,visited,dis,low_dis,time,-1); // -1 is parent
+            }
+        }
+    }
+    
+    void dfs_getArticulationPoint(vector<int>&ap,unordered_map<int,list<int>>&adj,int node,vector<bool>visited,vector<int>dis,vector<int>low_dis,int time,int parent){
+        //tarjan algo
+        visited[node]=true;
+        dis[node]=time++;
+        low_dis[node]=time++;
+        int child=0;
+        for(auto neighbour:adj[node]){
+            if(neighbour==parent){
+                continue;
+            }
+            else if(!visited[neighbour]){
+                dfs_getArticulationPoint(ap,adj,neighbour,visited,dis,low_dis,time,node);
+                low_dis[node]=min(low_dis[node],low_dis[neighbour]);
+                if(dis[node]<=low_dis[neighbour] && parent!=-1){
+                    //art point is present
+                    ap.push_back(node);
+                    return;
+                }
+                child++;
+            }
+            //else visited[neighbour] and neighbour!=parent
+            else{
+                //means backedge is there , so for sure no bridge ,so just need to update the lowest distance value;
+                low_dis[node]=min(low_dis[node],dis[neighbour]); // why dis[neighbour] - that we will know in articulation point
+            }
+        }
+        if(parent==-1 && child>1){
+            ap.push_back(node);
+        }
+    }
+    void getArticulationPoint(vector<pair<int,int>>&edges,int nodes){
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i].first;
+            int v=edges[i].second;
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        vector<int>dis(nodes); //discovery time array
+        vector<int>ap; // art point array
+        vector<int>low_dis(nodes); //lowest disc time array
+        vector<bool>visited(nodes,false); //lowest disc time array
+        int time=0;
+        for(int i=0;i<nodes;i++){
+            if(!visited[i]){
+                dfs_getArticulationPoint(ap,adj,i,visited,dis,low_dis,time,-1); // -1 is parent
+            }
+        }
+        for(auto i:ap){
+            cout<<i<<" ";
+        }
+        return;
+    }
+
+    //Kosaraju's Algorithm - SCC(strongly connected components (Directed Graph)
+    // In a directed graph, a Strongly Connected Component is a subset of vertices where every vertex in the subset is reachable from every other vertex in the same subset by traversing the directed edges
+    // It is not in undirected graph as there , there is no meaning of SCC , as full graph would be 1 SCC , as we can reach any node from any node in that SCC
+    // Steps for Kosaraju's Algorithm - 1) Get nodes in stack (topological sort)
+    //                                  2) Transpose the graph
+    //                                  3) Do DFS according to stack nodes on the transpose graph
+    void kosaraju_top_sort(unordered_map<int,list<int>>&adj,int node,vector<bool>&visited,stack<int>&st){
+        visited[node]=true;
+        for(auto neighbour:adj[node]){
+            if(!visited[neighbour]){
+                kosaraju_top_sort(adj,neighbour,visited,st);
+            }
+        }
+        st.push(node);
+    }
+    void kosaraju_dfs(unordered_map<int,list<int>>&adj,int node,vector<bool>&visited){
+        visited[node]=true;
+        cout<<node<<" ";
+        for(auto neighbour:adj[node]){
+            if(!visited[neighbour]){
+                kosaraju_dfs(adj,neighbour,visited);
+            }
+        }
+    }
+    void Kosaraju_algorithm(vector<vector<int>>&edges,int nodes){
+        unordered_map<int,list<int>>adj;
+        for(int i=0;i<edges.size();i++){
+            int u=edges[i][0];
+            int v=edges[i][1];
+            adj[u].push_back(v);
+        }
+        //adj list created
+
+        stack<int>st;
+        vector<bool>visited(nodes,false);
+        //top sort in stack
+        for(int i=0;i<nodes;i++){
+            if(!visited[i]){
+                kosaraju_top_sort(adj,i,visited,st);
+            }
+        }
+        // we got our stack
+
+        // now transpose the graph
+        unordered_map<int,list<int>>transpose_adj;
+        for(auto neighbour:adj){
+            int u=neighbour.first;
+            visited[u]=false;
+            for(auto num:neighbour.second){
+                int v=num;
+                transpose_adj[v].push_back(u);
+            }
+        }
+        //transpose graph is ready
+        while(!st.empty()){
+            int front=st.top();
+            st.pop();
+            if(!visited[front]){
+                kosaraju_dfs(adj,front,visited);
+            }
+            cout<<endl;
+        }
+    }
 };
 int main(){
     // int vertex=3;
